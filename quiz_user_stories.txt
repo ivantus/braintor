@@ -1,0 +1,38 @@
+Quiz Application - User Stories
+
+Core System — Startup & Data Loading US-001 — Load questions from JSON
+on startup US-002 — Validate JSON structure on startup US-003 — Log
+number of loaded quizzes and questions US-004 — Handle missing JSON file
+US-005 — Keep questions in memory cache
+
+Quiz Retrieval US-006 — Get quiz by ID US-007 — Return first 5 questions
+US-008 — Return next 5 questions using offset US-009 — Return error when
+quiz not found US-010 — Return questions in deterministic order
+
+API Layer US-017 — Provide endpoint to list quizzes US-018 — Provide
+endpoint to get quiz metadata US-019 — Provide endpoint to get questions
+batch
+
+Observability US-022 — Log request processing time US-023 — Log errors
+during question retrieval
+
+Session & Quiz Flow US-024 — Create session when user enters quiz page
+US-025 — Assign unique session ID US-028 — Track current question index
+in session US-029 — Submit answers for current batch US-030 — Move to
+next batch of questions US-031 — Restart quiz session US-032 — Clear
+stored answers on restart
+
+UI — Quiz Selection US-039 — Display list of available quizzes US-040 —
+Select quiz from list US-041 — Navigate to quiz page after selection
+
+Session — Answer Tracking US-042 — Store answered questions in session
+US-043 — Store selected answers per question US-044 — Prevent duplicate
+answers for same question US-045 — Retrieve answered questions from
+session US-046 — Maintain answer history during navigation US-047 —
+Associate session with selected quiz US-048 — Track total number of
+answered questions
+
+Quiz Completion US-049 — Finish quiz session US-050 — Detect completion
+when all questions answered US-051 — Calculate quiz result US-052 —
+Return final result summary US-053 — Display result to user US-054 —
+Lock session after completion

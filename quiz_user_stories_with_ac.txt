@@ -1,0 +1,48 @@
+Quiz Application — User Stories with Description and Acceptance Criteria
+
+US-001 — Load questions from JSON on startup Description: The system
+loads all quiz questions from a JSON file during application startup and
+keeps them in memory.
+
+Acceptance Criteria: - Application reads JSON file during startup -
+Questions are available in memory after startup - Startup fails if
+loading process throws an exception
+
+US-006 — Get quiz by ID Description: A client requests a quiz using its
+identifier.
+
+Acceptance Criteria: - API accepts quiz ID parameter - Quiz is returned
+when ID exists - Error response is returned when quiz ID does not exist
+
+US-007 — Return first 5 questions Description: The system returns the
+first batch of 5 questions for the selected quiz.
+
+Acceptance Criteria: - Exactly 5 questions are returned when available -
+Questions belong to the requested quiz - Questions are returned in
+deterministic order
+
+US-024 — Create session when user enters quiz page Description: A new
+quiz session is created when the user opens the quiz page.
+
+Acceptance Criteria: - Session is created on first quiz access - Session
+ID is generated - Session is stored in memory
+
+US-042 — Store answered questions in session Description: The system
+stores all answered questions for the current user session.
+
+Acceptance Criteria: - Answer is stored when user submits response -
+Answer is associated with session ID - Stored answers persist during
+navigation
+
+US-031 — Restart quiz session Description: The user can restart the quiz
+using a restart button.
+
+Acceptance Criteria: - Restart button is available in UI - Session
+answers are cleared after restart - Quiz starts again from the first
+question
+
+US-049 — Finish quiz session Description: The user can finish the quiz
+and receive the final result.
+
+Acceptance Criteria: - Finish action is available - System calculates
+score - Result summary is returned to user
