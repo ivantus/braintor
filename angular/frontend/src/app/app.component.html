@@ -12,11 +12,22 @@
 
   <ul>
     @for (quiz of quizzes; track quiz.id) {
-      <li [attr.data-quiz-id]="quiz.id">
+      <li
+        [attr.data-quiz-id]="quiz.id"
+        [class.selected]="selectedQuiz?.id === quiz.id"
+        (click)="selectQuiz(quiz.id)">
         {{ quiz.name }}
       </li>
     }
   </ul>
+
+  @if (isQuizLoading) {
+    <p>Loading quiz details...</p>
+  }
+
+  @if (selectedQuiz) {
+    <app-quiz-questions [quiz]="selectedQuiz" />
+  }
 </main>
 
 
