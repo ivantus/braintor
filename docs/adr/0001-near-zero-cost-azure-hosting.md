@@ -345,3 +345,95 @@ Azure
 ```
 
 A follow-up implementation should add `.github/workflows/deploy.yml` and document or script the one-time Azure/GitHub OIDC bootstrap.
+
+
+#### Example: bootstrap UAMI from Azure Cloud Shell
+
+The following example creates a dedicated User-Assigned Managed Identity (UAMI) for GitHub Actions, configures GitHub OIDC trust for `ivantus/braintor` on `master`, grants deployment access to the Braintor resource group, and prints the three identifiers required by the GitHub Actions Azure login.
+
+```bash
+# ---------- CONFIG ----------
+RG="braintor"
+LOCATION="westeurope"
+
+UAMI_NAME="braintor-github-deploy"
+
+GITHUB_OWNER="ivantus"
+GITHUB_REPO="braintor"
+GITHUB_BRANCH="master"
+
+# ---------- AZURE CONTEXT ----------
+AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)
+
+echo "Subscription: $AZURE_SUBSCRIPTION_ID"
+echo "Tenant:       $AZURE_TENANT_ID"
+
+# ---------- RESOURCE GROUP ----------
+az group create \
+  --name "$RG" \
+  --location "$LOCATION"
+
+# ---------- USER-ASSIGNED MANAGED IDENTITY ----------
+az identity create \
+  --name "$UAMI_NAME" \
+  --resource-group "$RG" \
+  --location "$LOCATION"
+
+AZURE_CLIENT_ID=$(az identity show \
+  --name "$UAMI_NAME" \
+  --resource-group "$RG" \
+  --query clientId \
+  -o tsv)
+
+UAMI_PRINCIPAL_ID=$(az identity show \
+  --name "$UAMI_NAME" \
+  --resource-group "$RG" \
+  --query principalId \
+  -o tsv)
+
+# ---------- GITHUB OIDC TRUST ----------
+az identity federated-credential create \
+  --name "github-master" \
+  --identity-name "$UAMI_NAME" \
+  --resource-group "$RG" \
+  --issuer "https://token.actions.githubusercontent.com" \
+  --subject "repo:${GITHUB_OWNER}/${GITHUB_REPO}:ref:refs/heads/${GITHUB_BRANCH}" \
+  --audiences "api://AzureADTokenExchange"
+
+# ---------- PERMISSION TO DEPLOY INTO RESOURCE GROUP ----------
+RG_ID=$(az group show \
+  --name "$RG" \
+  --query id \
+  -o tsv)
+
+az role assignment create \
+  --assignee-object-id "$UAMI_PRINCIPAL_ID" \
+  --assignee-principal-type ServicePrincipal \
+  --role "Contributor" \
+  --scope "$RG_ID"
+
+# ---------- OUTPUT VALUES FOR GITHUB ----------
+echo
+echo "========================================="
+echo "GitHub Actions values"
+echo "========================================="
+echo
+echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
+echo
+echo "========================================="
+```
+
+The output values map directly to the GitHub Actions Azure login:
+
+```text
+AZURE_CLIENT_ID       -> UAMI client ID
+AZURE_TENANT_ID       -> Microsoft Entra tenant ID
+AZURE_SUBSCRIPTION_ID -> Azure subscription ID
+```
+
+These identifiers are not passwords. OIDC supplies the short-lived authentication token at workflow runtime.
+
+Note that `Contributor` can deploy ordinary resources but cannot create Azure RBAC role assignments. If Bicep creates role assignments (for example, granting the Function managed identity Cosmos DB data-plane access), the GitHub deployment identity also needs an appropriately scoped role-assignment permission. Prefer the narrowest suitable role instead of granting `Owner`.
