@@ -1,19 +1,24 @@
 <section class="quiz-detail">
   <h2>{{ quiz.name }}</h2>
 
-  <ol class="question-list">
-    @for (question of quiz.questions; track question.id) {
-      <li class="question">
-        <h3>{{ question.text }}</h3>
+  @if (quiz.questions[currentQuestionIndex]; as question) {
+    <div class="question">
+      <h3>{{ question.text }}</h3>
 
-        <ol class="answer-list" type="A">
-          @for (answer of question.answers; track answer.text) {
-            <li [class.correct]="answer.isCorrect">
-              {{ answer.text }}
-            </li>
-          }
-        </ol>
-      </li>
-    }
-  </ol>
+      <ol class="answer-list" type="A">
+        @for (answer of question.answers; track answer.text) {
+          <li (click)="selectAnswer(answer)">
+            {{ answer.text }}
+          </li>
+        }
+      </ol>
+    </div>
+  } @else {
+    <h3>Quiz completed!</h3>
+
+    <p>
+      Correct answers: {{ correctAnswers }} out of
+      {{ quiz.questions.length }}
+    </p>
+  }
 </section>

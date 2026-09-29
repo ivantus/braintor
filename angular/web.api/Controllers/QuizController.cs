@@ -267,6 +267,112 @@ public class QuizController : ControllerBase
                 new("html-and-css-q8", "What does display: block usually do?", new List<QuizAnswer> { new("Makes an element start on a new line and fill available width.", true), new("Deletes an element.", false), new("Creates a controller.", false), new("Returns HTTP 404.", false) }),
                 new("html-and-css-q9", "What does margin control?", new List<QuizAnswer> { new("Space outside an element.", true), new("Text content only.", false), new("API response body.", false), new("TypeScript imports.", false) }),
                 new("html-and-css-q10", "What is a form element used for?", new List<QuizAnswer> { new("Collecting user input.", true), new("Compiling backend code.", false), new("Installing Angular.", false), new("Serving Swagger.", false) })
+            }),
+        new Quiz(
+            "football-legends-achievements",
+            "Football Legends and Their Achievements",
+            new List<QuizQuestion>
+            {
+                new(
+                    "football-legends-achievements-q1",
+                    "Which player is the only footballer to have won three FIFA World Cups?",
+                    new List<QuizAnswer>
+                    {
+                        new("Pelé", true),
+                        new("Diego Maradona", false),
+                        new("Lionel Messi", false),
+                        new("Zinedine Zidane", false)
+                    }),
+                new(
+                    "football-legends-achievements-q2",
+                    "Which major international trophy did Lionel Messi win with Argentina in 2022?",
+                    new List<QuizAnswer>
+                    {
+                        new("FIFA World Cup", true),
+                        new("UEFA European Championship", false),
+                        new("Africa Cup of Nations", false),
+                        new("CONCACAF Gold Cup", false)
+                    }),
+                new(
+                    "football-legends-achievements-q3",
+                    "How many UEFA Champions League titles did Cristiano Ronaldo win as a player?",
+                    new List<QuizAnswer>
+                    {
+                        new("Five", true),
+                        new("Two", false),
+                        new("Three", false),
+                        new("Seven", false)
+                    }),
+                new(
+                    "football-legends-achievements-q4",
+                    "Which player captained Argentina to victory at the 1986 FIFA World Cup?",
+                    new List<QuizAnswer>
+                    {
+                        new("Diego Maradona", true),
+                        new("Gabriel Batistuta", false),
+                        new("Javier Zanetti", false),
+                        new("Alfredo Di Stéfano", false)
+                    }),
+                new(
+                    "football-legends-achievements-q5",
+                    "Who scored Spain's winning goal in the 2010 FIFA World Cup final?",
+                    new List<QuizAnswer>
+                    {
+                        new("Andrés Iniesta", true),
+                        new("Xavi Hernández", false),
+                        new("David Villa", false),
+                        new("Fernando Torres", false)
+                    }),
+                new(
+                    "football-legends-achievements-q6",
+                    "Which player scored twice for France in the 1998 FIFA World Cup final?",
+                    new List<QuizAnswer>
+                    {
+                        new("Zinedine Zidane", true),
+                        new("Thierry Henry", false),
+                        new("Didier Deschamps", false),
+                        new("David Trezeguet", false)
+                    }),
+                new(
+                    "football-legends-achievements-q7",
+                    "Which Brazilian striker won the Golden Boot at the 2002 FIFA World Cup with eight goals?",
+                    new List<QuizAnswer>
+                    {
+                        new("Ronaldo Nazário", true),
+                        new("Ronaldinho", false),
+                        new("Rivaldo", false),
+                        new("Romário", false)
+                    }),
+                new(
+                    "football-legends-achievements-q8",
+                    "Which Dutch legend won the Ballon d'Or three times?",
+                    new List<QuizAnswer>
+                    {
+                        new("Johan Cruyff", true),
+                        new("Dennis Bergkamp", false),
+                        new("Arjen Robben", false),
+                        new("Ruud van Nistelrooy", false)
+                    }),
+                new(
+                    "football-legends-achievements-q9",
+                    "Which player captained West Germany to the 1974 FIFA World Cup title?",
+                    new List<QuizAnswer>
+                    {
+                        new("Franz Beckenbauer", true),
+                        new("Gerd Müller", false),
+                        new("Lothar Matthäus", false),
+                        new("Jürgen Klinsmann", false)
+                    }),
+                new(
+                    "football-legends-achievements-q10",
+                    "Which player appeared in three consecutive FIFA World Cup finals from 1994 to 2002?",
+                    new List<QuizAnswer>
+                    {
+                        new("Cafu", true),
+                        new("Roberto Carlos", false),
+                        new("Paolo Maldini", false),
+                        new("Lilian Thuram", false)
+                    })
             })
     };
 
