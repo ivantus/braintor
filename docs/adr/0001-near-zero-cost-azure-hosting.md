@@ -193,3 +193,155 @@ Before infrastructure work is considered complete:
 6. Verify the Function hosting SKU supports scale-to-zero behavior.
 7. Ensure repeated deployments do not unnecessarily recreate resources.
 8. If Azure CLI is authenticated, run a `what-if` deployment, but do not deploy resources unless explicitly instructed.
+
+
+## Deployment flow
+
+GitHub Actions is the deployment client for Azure. Bicep describes the desired infrastructure; a GitHub-hosted runner authenticates to Azure and submits that desired state to Azure Resource Manager (ARM).
+
+```text
+Developer -> git push -> GitHub Actions runner
+                           |
+                           +-- OIDC -> Microsoft Entra ID
+                           |
+                           +-- Bicep -> ARM
+                           |            +-- Static Web App
+                           |            +-- Function App
+                           |            +-- Storage
+                           |            +-- Cosmos DB
+                           |            +-- Managed Identity / RBAC
+                           |
+                           +-- build/deploy .NET API -> Function App
+                           +-- build/deploy frontend -> Static Web App
+```
+
+### GitHub to Azure authentication
+
+Use GitHub Actions OIDC / Azure workload identity federation, not a long-lived Azure client secret.
+
+Azure is configured once to trust GitHub tokens for the expected repository and deployment context (for example `ivantus/braintor` and the protected production branch/environment). The workflow uses non-secret identifiers such as `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID`.
+
+```text
+GitHub runner
+    |
+    | request signed short-lived OIDC token
+    v
+GitHub OIDC issuer
+    |
+    v
+Microsoft Entra ID
+    |
+    | validate repository/ref/environment claims
+    v
+short-lived Azure access token
+    |
+    v
+Azure Resource Manager
+```
+
+The workflow must request `id-token: write` and can authenticate with `azure/login`:
+
+```yaml
+permissions:
+  id-token: write
+  contents: read
+
+steps:
+  - uses: actions/checkout@v4
+
+  - uses: azure/login@v2
+    with:
+      client-id: ${{ vars.AZURE_CLIENT_ID }}
+      tenant-id: ${{ vars.AZURE_TENANT_ID }}
+      subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+  - name: Deploy infrastructure
+    run: |
+      az deployment group create \
+        --resource-group braintor \
+        --template-file infra/main.bicep \
+        --parameters infra/parameters/prod.bicepparam
+```
+
+Scope the deployment identity to the minimum permissions required, preferably on the Braintor resource group rather than the whole subscription.
+
+### Bicep and application deployment
+
+The runner does not directly create Azure resources. It sends the Bicep deployment to ARM. ARM reconciles desired and actual state: missing resources are created, unchanged resources remain unchanged, and changed resources are updated where supported. Bicep must therefore be deterministic and idempotent.
+
+Bicep provisions/configures hosting resources; application code is deployed separately. After infrastructure deployment, GitHub Actions should:
+
+1. restore, test, and publish the .NET Function application;
+2. deploy the published artifact to the Function App;
+3. install dependencies, test, and build the frontend;
+4. deploy the frontend artifact to Azure Static Web Apps.
+
+This may initially be one workflow and later be split if useful.
+
+### Runtime identity: Function to Cosmos DB
+
+Deployment identity and runtime identity are separate:
+
+```text
+Deployment:
+GitHub Actions -> OIDC -> Entra ID -> Azure Resource Manager
+
+Runtime:
+Azure Function -> system-assigned Managed Identity
+               -> Entra ID
+               -> Cosmos DB data-plane RBAC
+               -> Cosmos DB
+```
+
+Bicep enables the Function's system-assigned managed identity and grants the minimum required Cosmos DB data-plane role. The application receives only the non-secret Cosmos endpoint and uses `DefaultAzureCredential`:
+
+```csharp
+var credential = new DefaultAzureCredential();
+
+var client = new CosmosClient(
+    configuration["Cosmos__Endpoint"],
+    credential);
+```
+
+No Cosmos account key or database password is required.
+
+### One-time bootstrap
+
+There is a one-time bootstrap because GitHub cannot deploy Azure resources until Azure trusts the GitHub deployment identity.
+
+Create/configure once:
+
+```text
+Azure subscription
+       |
+       +-- Resource Group: braintor
+       |
+       +-- Entra application / deployment identity
+               |
+               +-- federated GitHub credential
+               |    repository: ivantus/braintor
+               |    branch/environment: approved deployment context
+               |
+               +-- required RBAC on Braintor resource group
+```
+
+This may be performed manually or by an explicitly run bootstrap script and must not require a permanent Azure client secret. After bootstrap, normal infrastructure and application changes flow through GitHub Actions.
+
+The target developer experience is:
+
+```text
+git push / merge
+      |
+      v
+GitHub Actions
+      |
+      +-- OIDC authenticate to Azure
+      +-- deploy Bicep
+      +-- deploy API
+      +-- deploy Web UI
+      |
+      v
+Azure
+```
+
+A follow-up implementation should add `.github/workflows/deploy.yml` and document or script the one-time Azure/GitHub OIDC bootstrap.
